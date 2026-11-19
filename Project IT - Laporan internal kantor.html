@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laporan Lingkungan & IT Helpdesk Otomatis</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --open-bg: #fef3c7;
+      --open-text: #b45309;
+      --close-bg: #dcfce7;
+      --close-text: #15803d;
+      --urgent-bg: #fee2e2;
+      --urgent-text: #b91c1c;
+      --shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      padding: 20px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      color: white;
+      padding: 22px 28px;
+      border-radius: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header p {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+    }
+
+    .stat-pill {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 8px 16px;
+      border-radius: 12px;
+      text-align: center;
+      min-width: 90px;
+    }
+
+    .stat-pill span {
+      display: block;
+      font-size: 0.72rem;
+      color: #cbd5e1;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-pill strong {
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    /* MAIN GRID */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 410px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 920px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: 18px;
+      padding: 22px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* FORM */
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.84rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    input[type="text"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.92rem;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fff;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 92px;
+    }
+
+    /* AUTO ROUTING PREVIEW BOX */
+    .routing-box {
+      background: #f8fafc;
+      border: 1.5px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 15px;
+      transition: all 0.25s ease;
+    }
+
+    .routing-box.detected {
+      background: #eff6ff;
+      border-color: #93c5fd;
+    }
+
+    .routing-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .team-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    .routing-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .keyword-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .kw-chip {
+      font-size: 0.72rem;
+      background: white;
+      border: 1px solid #cbd5e1;
+      padding: 2px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+
+    .kw-chip:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* UPLOAD AREA */
+    .upload-area {
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #f8fafc;
+      position: relative;
+    }
+
+    .upload-area:hover {
+      border-color: var(--primary);
+      background: #eff6ff;
+    }
+
+    .upload-area input {
+      display: none;
+    }
+
+    .preview-img {
+      max-height: 150px;
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 10px;
+      display: none;
+      object-fit: cover;
+      border: 1px solid var(--border);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 11px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-submit:hover {
+      background: var(--primary-hover);
+    }
+
+    /* RIGHT SIDE: FILTERS & TICKETS */
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 6px 13px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: white;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+
+    .tab-btn.active {
+      background: var(--text);
+      color: white;
+      border-color: var(--text);
+    }
+
+    .ticket-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .ticket-card {
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      background: #fff;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .ticket-card:hover {
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+    }
+
+    .ticket-card.closed {
+      opacity: 0.78;
+      background: #f8fafc;
+    }
+
+    .ticket-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .ticket-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .ticket-id {
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: var(--primary);
+    }
+
+    .status-badge {
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+    }
+
+    .status-open {
+      background: var(--open-bg);
+      color: var(--open-text);
+    }
+
+    .status-closed {
+      background: var(--close-bg);
+      color: var(--close-text);
+    }
+
+    .sla-timer {
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .sla-timer.overdue {
+      background: var(--urgent-bg);
+      color: var(--urgent-text);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.65; }
+    }
+
+    .ticket-body {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: start;
+    }
+
+    @media (max-width: 560px) {
+      .ticket-body { grid-template-columns: 1fr; }
+    }
+
+    .ticket-desc {
+      font-size: 0.92rem;
+      margin-bottom: 8px;
+    }
+
+    .auto-note {
+      background: #f8fafc;
+      border-left: 3px solid var(--primary);
+      padding: 8px 11px;
+      font-size: 0.8rem;
+      color: #334155;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 10px;
+    }
+
+    .ticket-photo {
+      width: 96px;
+      height: 96px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .ticket-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .ticket-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-sm {
+      padding: 5px 11px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: white;
+      transition: all 0.15s;
+    }
+
+    .btn-close-ticket {
+      background: #16a34a;
+      color: white;
+      border-color: #16a34a;
+    }
+
+    .btn-close-ticket:hover {
+      background: #15803d;
+    }
+
+    .btn-reopen-ticket {
+      background: #f59e0b;
+      color: white;
+      border-color: #f59e0b;
+    }
+
+    /* HISTORY LOG DRAWER / LIST */
+    .history-box {
+      margin-top: 8px;
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.76rem;
+      display: none;
+    }
+
+    .history-box.show {
+      display: block;
+    }
+
+    .history-item {
+      padding: 4px 0;
+      border-bottom: 1px dashed #e2e8f0;
+      color: #475569;
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    /* IMAGE MODAL */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.75);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal img {
+      max-width: 90%;
+      max-height: 85vh;
+      border-radius: 14px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>🏢 Laporan Lingkungan & Kondisi Kantor</h1>
+        <p>Sistem Otomatisasi Routing Tim IT (Infrastruktur, Development, Asset, Helpdesk)</p>
+      </div>
+      <div class="stats-bar">
+        <div class="stat-pill">
+          <span>Open</span>
+          <strong id="countOpen" style="color: #fbbf24;">0</strong>
+        </div>
+        <div class="stat-pill">
+          <span>Closed</span>
+          <strong id="countClosed" style="color: #4ade80;">0</strong>
+        </div>
+        <div class="stat-pill">
+          <span>Total Histori</span>
+          <strong id="countTotal">0</strong>
+        </div>
+      </div>
+    </header>
+
+    <div class="main-grid">
+      <!-- FORM INPUT LAPORAN -->
+      <div class="card">
+        <div class="card-title">
+          <span>📝 Buat Laporan Baru</span>
+        </div>
+
+        <form id="reportForm">
+          <div class="form-group">
+            <label>Nama Pelapor & Lokasi Ruangan</label>
+            <input type="text" id="reporterInput" placeholder="Contoh: Rina - Lantai 3 Ruang Meeting" required />
+          </div>
+
+          <div class="form-group">
+            <label>Deskripsi Kondisi / Masalah Kantor</label>
+            <textarea id="descInput" placeholder="Jelaskan kendala (misal: WiFi putus, aplikasi ERP error, kursi/laptop rusak, atau printer macet)..." required></textarea>
+            <div class="keyword-tags">
+              <span class="kw-chip" onclick="insertKeyword('WiFi lambat & jaringan LAN putus')">+ Jaringan/WiFi</span>
+              <span class="kw-chip" onclick="insertKeyword('Aplikasi internal bug & tidak bisa login')">+ Aplikasi/Bug</span>
+              <span class="kw-chip" onclick="insertKeyword('Monitor berkedip & baterai laptop drop')">+ Barang/Asset</span>
+              <span class="kw-chip" onclick="insertKeyword('Printer macet & butuh instalasi email')">+ Helpdesk</span>
+            </div>
+          </div>
+
+          <!-- OTOMASI ROUTING PREVIEW -->
+          <div class="routing-box" id="routingBox">
+            <div class="routing-header">
+              <span style="font-size: 0.76rem; font-weight: 700; color: #475569;">🎯 OTOMASI TUJUAN TIM IT:</span>
+              <span class="team-badge" id="detectedTeamBadge">🎧 IT Helpdesk (Default)</span>
+            </div>
+            <div class="routing-desc" id="detectedTeamExplain">
+              Menunggu ketikan kata kunci... Sistem otomatis mengarahkan laporan ke tim spesialis beserta panduan penanganan awal.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Setting Waktu Menunggu (Target SLA)</label>
+            <select id="slaSelect">
+              <option value="15">15 Menit (Urgent / Kritis)</option>
+              <option value="30" selected>30 Menit (Prioritas Tinggi)</option>
+              <option value="60">1 Jam (Normal)</option>
+              <option value="180">3 Jam (Pemeliharaan / Asset)</option>
+              <option value="1440">24 Jam (Permintaan Pengadaan)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Upload Foto Kondisi Lapangan</label>
+            <label class="upload-area" for="photoInput">
+              <div style="font-size: 1.5rem;">📸</div>
+              <div style="font-size: 0.84rem; font-weight: 600; color: #334155;">Klik untuk pilih / unggah foto kondisi</div>
+              <div style="font-size: 0.74rem; color: var(--muted);">Format JPG, PNG, WEBP</div>
+              <input type="file" id="photoInput" accept="image/*" />
+              <img id="photoPreview" class="preview-img" alt="Preview Foto" />
+            </label>
+          </div>
+
+          <button type="submit" class="btn-submit">Kirim Laporan & Jalankan Timer 🚀</button>
+        </form>
+      </div>
+
+      <!-- DAFTAR TICKET & HISTORI -->
+      <div class="card">
+        <div class="toolbar">
+          <div class="filter-tabs" id="statusTabs">
+            <button class="tab-btn active" data-filter="ALL">Semua</button>
+            <button class="tab-btn" data-filter="OPEN">🟡 Open</button>
+            <button class="tab-btn" data-filter="CLOSED">🟢 Closed</button>
+          </div>
+
+          <select id="teamFilter" style="width: auto; padding: 6px 12px; font-size: 0.82rem;">
+            <option value="ALL">Semua Divisi IT</option>
+            <option value="Infrastruktur (Jaringan)">🌐 Infrastruktur (Jaringan)</option>
+            <option value="Development">💻 Development</option>
+            <option value="Asset">📦 Asset</option>
+            <option value="Helpdesk">🎧 Helpdesk</option>
+          </select>
+        </div>
+
+        <div class="ticket-list" id="ticketList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PREVIEW FOTO -->
+  <div class="modal" id="imgModal" onclick="this.classList.remove('active')">
+    <img id="modalImgSrc" src="" alt="Bukti Foto" />
+  </div>
+
+  <script>
+    // --- KONFIGURASI OTOMASI KEYWORD & DIVISI IT ---
+    const IT_RULES = [
+      {
+        team: 'Infrastruktur (Jaringan)',
+        badge: '🌐 Infrastruktur (Jaringan)',
+        color: '#0284c7',
+        bg: '#e0f2fe',
+        keywords: ['wifi', 'jaringan', 'internet', 'lan', 'kabel', 'router', 'switch', 'server', 'vpn', 'putus', 'lambat', 'koneksi', 'ip', 'cctv', 'listrik', 'ups'],
+        explanation: 'Diteruskan otomatis ke Tim Network & Infra: Pengecekan Access Point, port switch lantai terkait, stabilitas gateway ISP, dan perangkat server.'
+      },
+      {
+        team: 'Development',
+        badge: '💻 Development',
+        color: '#7c3aed',
+        bg: '#ede9fe',
+        keywords: ['aplikasi', 'web', 'website', 'sistem', 'erp', 'bug', 'error', 'database', 'api', 'coding', 'software', 'fitur', 'crash', 'login', 'portal', 'dashboard'],
+        explanation: 'Diteruskan otomatis ke Tim Software Development: Inspeksi log error aplikasi, pengecekan query database, dan perbaikan bug pada sistem internal.'
+      },
+      {
+        team: 'Asset',
+        badge: '📦 Asset',
+        color: '#d97706',
+        bg: '#fef3c7',
+        keywords: ['laptop', 'pc', 'komputer', 'monitor', 'keyboard', 'mouse', 'kursi', 'meja', 'ac', 'lampu', 'barang', 'inventaris', 'rusak', 'ganti', 'pengadaan', 'baterai', 'charger'],
+        explanation: 'Diteruskan otomatis ke Tim Manajemen Asset & Fasilitas: Verifikasi nomor seri inventaris, pengecekan kelayakan perangkat fisik, dan penjadwalan unit pengganti.'
+      },
+      {
+        team: 'Helpdesk',
+        badge: '🎧 Helpdesk',
+        color: '#059669',
+        bg: '#dcfce7',
+        keywords: ['printer', 'tinta', 'email', 'password', 'reset', 'akun', 'install', 'zoom', 'meeting', 'proyektor', 'bantuan', 'user', 'akses'],
+        explanation: 'Diteruskan otomatis ke Tim IT Helpdesk L1: Pendampingan teknis langsung di meja kerja, reset kredensial akun, dan konfigurasi perangkat operasional harian.'
+      }
+    ];
+
+    // --- STATE & STORAGE ---
+    let tickets = JSON.parse(localStorage.getItem('env_it_tickets_v1')) || [
+      {
+        id: 'TKT-1001',
+        reporter: 'Budi - Ruang Operasional Lt.2',
+        description: 'Koneksi WiFi dan kabel LAN di area operasional sering putus nyambung sejak pagi.',
+        team: 'Infrastruktur (Jaringan)',
+        autoExplanation: IT_RULES[0].explanation,
+        matchedKeywords: ['wifi', 'kabel', 'lan', 'putus'],
+        slaMinutes: 30,
+        createdAt: Date.now() - 12 * 60000,
+        status: 'OPEN',
+        photo: null,
+        history: [
+          { time: formatClock(new Date(Date.now() - 12 * 60000)), action: 'Laporan dibuat & otomatis dialihkan ke Tim Infrastruktur (Jaringan) (SLA 30 Menit).' }
+        ]
+      },
+      {
+        id: 'TKT-1002',
+        reporter: 'Sinta - Divisi Finance',
+        description: 'Monitor kedua berkedip-kedip dan bracket meja agak longgar, butuh pengecekan asset.',
+        team: 'Asset',
+        autoExplanation: IT_RULES[2].explanation,
+        matchedKeywords: ['monitor', 'meja', 'asset'],
+        slaMinutes: 60,
+        createdAt: Date.now() - 85 * 60000,
+        closedAt: Date.now() - 30 * 60000,
+        status: 'CLOSED',
+        photo: null,
+        history: [
+          { time: formatClock(new Date(Date.now() - 85 * 60000)), action: 'Laporan dibuat & otomatis dialihkan ke Tim Asset (SLA 60 Menit).' },
+          { time: formatClock(new Date(Date.now() - 30 * 60000)), action: 'Status diubah menjadi CLOSED — Unit monitor telah diganti & bracket dikencangkan.' }
+        ]
+      }
+    ];
+
+    let currentStatusFilter = 'ALL';
+    let currentTeamFilter = 'ALL';
+    let uploadedPhotoBase64 = null;
+
+    // --- DETEKSI KEYWORD OTOMATIS ---
+    function analyzeKeywords(text) {
+      const lower = text.toLowerCase();
+      let bestMatch = null;
+      let highestScore = 0;
+
+      IT_RULES.forEach(rule => {
+        const found = rule.keywords.filter(kw => lower.includes(kw));
+        if (found.length > highestScore) {
+          highestScore = found.length;
+          bestMatch = { ...rule, found };
+        }
+      });
+
+      if (!bestMatch) {
+        const fallback = IT_RULES[3]; // Helpdesk default
+        return { ...fallback, found: [] };
+      }
+      return bestMatch;
+    }
+
+    const descInput = document.getElementById('descInput');
+    descInput.addEventListener('input', () => {
+      const result = analyzeKeywords(descInput.value);
+      const box = document.getElementById('routingBox');
+      const badge = document.getElementById('detectedTeamBadge');
+      const explain = document.getElementById('detectedTeamExplain');
+
+      badge.textContent = result.badge;
+      badge.style.background = result.bg;
+      badge.style.color = result.color;
+
+      if (descInput.value.trim().length > 0) {
+        box.classList.add('detected');
+        const kwText = result.found.length
+          ? `<strong>Kata kunci terdeteksi:</strong> [${result.found.join(', ')}]<br>`
+          : `<strong>Kategori Umum:</strong> Dialihkan ke lini pertama.<br>`;
+        explain.innerHTML = `${kwText}${result.explanation}`;
+      } else {
+        box.classList.remove('detected');
+        explain.textContent = 'Menunggu ketikan kata kunci... Sistem otomatis mengarahkan laporan ke tim spesialis beserta panduan penanganan awal.';
+      }
+    });
+
+    function insertKeyword(sample) {
+      descInput.value = descInput.value ? descInput.value + ' - ' + sample : sample;
+      descInput.dispatchEvent(new Event('input'));
+      descInput.focus();
+    }
+
+    // --- UPLOAD FOTO ---
+    document.getElementById('photoInput').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        uploadedPhotoBase64 = evt.target.result;
+        const img = document.getElementById('photoPreview');
+        img.src = uploadedPhotoBase64;
+        img.style.display = 'inline-block';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // --- SUBMIT LAPORAN ---
+    document.getElementById('reportForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const reporter = document.getElementById('reporterInput').value.trim();
+      const description = descInput.value.trim();
+      const slaMinutes = parseInt(document.getElementById('slaSelect').value, 10);
+      const routing = analyzeKeywords(description);
+
+      const newTicket = {
+        id: 'TKT-' + Math.floor(1000 + Math.random() * 9000),
+        reporter,
+        description,
+        team: routing.team,
+        autoExplanation: routing.explanation,
+        matchedKeywords: routing.found,
+        slaMinutes,
+        createdAt: Date.now(),
+        status: 'OPEN',
+        photo: uploadedPhotoBase64,
+        history: [
+          {
+            time: formatClock(new Date()),
+            action: `Laporan dibuat oleh ${reporter}. Otomatis dikirim ke Tim ${routing.team} (Target tunggu: ${formatSlaLabel(slaMinutes)}).`
+          }
+        ]
+      };
+
+      tickets.unshift(newTicket);
+      saveAndRender();
+
+      // Reset form
+      this.reset();
+      uploadedPhotoBase64 = null;
+      document.getElementById('photoPreview').style.display = 'none';
+      descInput.dispatchEvent(new Event('input'));
+    });
+
+    // --- OPEN / CLOSE TICKET ---
+    function toggleTicketStatus(id) {
+      const t = tickets.find(item => item.id === id);
+      if (!t) return;
+
+      if (t.status === 'OPEN') {
+        t.status = 'CLOSED';
+        t.closedAt = Date.now();
+        t.history.push({
+          time: formatClock(new Date()),
+          action: `Status diubah menjadi CLOSED oleh Tim ${t.team}. Penanganan selesai.`
+        });
+      } else {
+        t.status = 'OPEN';
+        t.createdAt = Date.now(); // Reset timer menunggu saat dibuka kembali
+        delete t.closedAt;
+        t.history.push({
+          time: formatClock(new Date()),
+          action: `Status dibuka kembali (RE-OPEN). Timer waktu menunggu (${formatSlaLabel(t.slaMinutes)}) dimulai ulang.`
+        });
+      }
+      saveAndRender();
+    }
+
+    function updateSlaTime(id, newMinutes) {
+      const t = tickets.find(item => item.id === id);
+      if (!t) return;
+      t.slaMinutes = parseInt(newMinutes, 10);
+      t.history.push({
+        time: formatClock(new Date()),
+        action: `Setting waktu menunggu diubah menjadi ${formatSlaLabel(t.slaMinutes)}.`
+      });
+      saveAndRender();
+    }
+
+    function toggleHistory(id) {
+      const el = document.getElementById('hist-' + id);
+      if (el) el.classList.toggle('show');
+    }
+
+    function openImageModal(src) {
+      document.getElementById('modalImgSrc').src = src;
+      document.getElementById('imgModal').classList.add('active');
+    }
+
+    // --- FORMATTER & TIMER ---
+    function formatClock(date) {
+      return date.toLocaleString('id-ID', {
+        day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    function formatSlaLabel(mins) {
+      if (mins < 60) return `${mins} Menit`;
+      return `${mins / 60} Jam`;
+    }
+
+    function getRemainingText(ticket) {
+      if (ticket.status === 'CLOSED') {
+        return { text: '✅ Selesai ditangani', overdue: false };
+      }
+      const deadline = ticket.createdAt + ticket.slaMinutes * 60000;
+      const diffMs = deadline - Date.now();
+
+      if (diffMs <= 0) {
+        const overMins = Math.floor(Math.abs(diffMs) / 60000);
+        return { text: `⚠️ Lewat batas ${overMins} mnt`, overdue: true };
+      }
+      const mins = Math.floor(diffMs / 60000);
+      const secs = Math.floor((diffMs % 60000) / 1000);
+      return { text: `⏳ Sisa ${mins}m ${secs < 10 ? '0' : ''}${secs}s`, overdue: false };
+    }
+
+    // --- RENDER LIST ---
+    function renderTickets() {
+      const listEl = document.getElementById('ticketList');
+      const openCount = tickets.filter(t => t.status === 'OPEN').length;
+      const closedCount = tickets.filter(t => t.status === 'CLOSED').length;
+
+      document.getElementById('countOpen').textContent = openCount;
+      document.getElementById('countClosed').textContent = closedCount;
+      document.getElementById('countTotal').textContent = tickets.length;
+
+      const filtered = tickets.filter(t => {
+        const matchStatus = currentStatusFilter === 'ALL' || t.status === currentStatusFilter;
+        const matchTeam = currentTeamFilter === 'ALL' || t.team === currentTeamFilter;
+        return matchStatus && matchTeam;
+      });
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `<div style="text-align:center; padding: 36px; color: var(--muted);">Belum ada laporan pada filter ini.</div>`;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(t => {
+        const rule = IT_RULES.find(r => r.team === t.team) || IT_RULES[3];
+        const slaInfo = getRemainingText(t);
+
+        return `
+          <div class="ticket-card ${t.status === 'CLOSED' ? 'closed' : ''}">
+            <div class="ticket-top">
+              <div class="ticket-meta">
+                <span class="ticket-id">${t.id}</span>
+                <span class="status-badge ${t.status === 'OPEN' ? 'status-open' : 'status-closed'}">${t.status}</span>
+                <span class="team-badge" style="background:${rule.bg}; color:${rule.color};">${rule.badge}</span>
+              </div>
+              <div class="sla-timer ${slaInfo.overdue ? 'overdue' : ''}" id="timer-${t.id}">
+                ${slaInfo.text}
+              </div>
+            </div>
+
+            <div class="ticket-body">
+              <div>
+                <div style="font-size:0.82rem; font-weight:700; color:#475569; margin-bottom:4px;">📍 ${t.reporter}</div>
+                <div class="ticket-desc">${t.description}</div>
+                <div class="auto-note">
+                  <strong>🤖 Penjelasan Otomasi (${t.team}):</strong><br>
+                  ${t.autoExplanation}
+                </div>
+              </div>
+              ${t.photo ? `<img src="${t.photo}" class="ticket-photo" onclick="openImageModal('${t.photo}')" title="Klik untuk perbesar foto" />` : ''}
+            </div>
+
+            <div class="ticket-footer">
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span>🕒 Dibuat: ${formatClock(new Date(t.createdAt))}</span>
+                ${t.status === 'OPEN' ? `
+                  <label style="display:inline-flex; align-items:center; gap:4px; margin:0; font-size:0.76rem; color:var(--muted);">
+                    | Ubah Waktu Tunggu:
+                    <select onchange="updateSlaTime('${t.id}', this.value)" style="padding:2px 6px; font-size:0.75rem; width:auto;">
+                      <option value="15" ${t.slaMinutes === 15 ? 'selected' : ''}>15 Mnt</option>
+                      <option value="30" ${t.slaMinutes === 30 ? 'selected' : ''}>30 Mnt</option>
+                      <option value="60" ${t.slaMinutes === 60 ? 'selected' : ''}>1 Jam</option>
+                      <option value="180" ${t.slaMinutes === 180 ? 'selected' : ''}>3 Jam</option>
+                      <option value="1440" ${t.slaMinutes === 1440 ? 'selected' : ''}>24 Jam</option>
+                    </select>
+                  </label>
+                ` : ''}
+              </div>
+
+              <div class="ticket-actions">
+                <button class="btn-sm" onclick="toggleHistory('${t.id}')">📜 Histori (${t.history.length})</button>
+                <button class="btn-sm ${t.status === 'OPEN' ? 'btn-close-ticket' : 'btn-reopen-ticket'}" onclick="toggleTicketStatus('${t.id}')">
+                  ${t.status === 'OPEN' ? '✔️ Close Laporan' : '🔄 Re-Open'}
+                </button>
+              </div>
+            </div>
+
+            <div class="history-box" id="hist-${t.id}">
+              <strong>Riwayat Aktivitas & Penanganan:</strong>
+              ${t.history.map(h => `<div class="history-item">• <strong>[${h.time}]</strong> ${h.action}</div>`).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function saveAndRender() {
+      localStorage.setItem('env_it_tickets_v1', JSON.stringify(tickets));
+      renderTickets();
+    }
+
+    // --- FILTER EVENTS ---
+    document.querySelectorAll('#statusTabs .tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#statusTabs .tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentStatusFilter = btn.dataset.filter;
+        renderTickets();
+      });
+    });
+
+    document.getElementById('teamFilter').addEventListener('change', (e) => {
+      currentTeamFilter = e.target.value;
+      renderTickets();
+    });
+
+    // --- LIVE COUNTDOWN TIMER SETIAP DETIK ---
+    setInterval(() => {
+      tickets.forEach(t => {
+        if (t.status === 'OPEN') {
+          const timerEl = document.getElementById('timer-' + t.id);
+          if (timerEl) {
+            const info = getRemainingText(t);
+            timerEl.textContent = info.text;
+            timerEl.classList.toggle('overdue', info.overdue);
+          }
+        }
+      });
+    }, 1000);
+
+    // INIT
+    renderTickets();
+  </script>
+</body>
+</html>
